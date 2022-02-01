@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200&display=swap');
+
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins';
+
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: rgb(29,29,59) ;
+}
+
+.container{
+    width: 500px;
+    /* height: 500px; */
+    border-radius: 10px;
+    background: #2f2841;
+    box-shadow: 0 15px 40px #00000056;
+}
+.section__top{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: #00ff88;
+    font-size: 20px;
+    border-radius: 5px;
+    /* margin-bottom: 10px; */
+}
+.container .section__top .month{
+    font-size: 30px;
+    font-weight: 600;
+}
+.container .section__top .year{
+    font-size: 15px;
+    font-weight: 600;
+}
+.section .day tr th{
+    padding: 5px 10px 5px 10px;
+    cursor: pointer;
+    width: 100px;
+}
+
+.section .day tr th:hover{
+    box-shadow: 0 0 10px #00ff88;
+    background: #00ff88;
+    border-radius: 60px;
+
+}
+.container .section .mes__passado{
+    color: rgb(0, 0, 0, 0.35)
+}
+.container .section .mes__seguinte{
+    color: rgb(0, 0, 0, 0.35)
+
+}
+.days{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+
+}
+.days div{
+    margin: 5px;
+    width: calc(390px/7);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.week__days{
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    padding: 0 0 0 13px;
+    margin-left: -1px;
+}
+.week__days div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(450px/7);
+    
+}
