@@ -1,34 +1,436 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda</title>
-    <link rel="stylesheet" href="style.css">
-    <script defer src="main.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agenda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b14;
+      --surface: #0e1322;
+      --border: rgba(255,255,255,0.06);
+      --accent: #c8ff57;
+      --accent2: #57c8ff;
+      --accent3: #ff6b6b;
+      --text: #e8eaf0;
+      --muted: rgba(232,234,240,0.35);
+    }
+
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Background noise + grid */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(200,255,87,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,255,87,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Ambient glow blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .blob-1 {
+      width: 500px; height: 500px;
+      background: rgba(200,255,87,0.07);
+      top: -120px; left: -100px;
+      animation-delay: 0s;
+    }
+    .blob-2 {
+      width: 400px; height: 400px;
+      background: rgba(87,200,255,0.06);
+      bottom: -100px; right: -80px;
+      animation-delay: -4s;
+    }
+    .blob-3 {
+      width: 300px; height: 300px;
+      background: rgba(255,107,107,0.05);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -8s;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    /* Card */
+    .card {
+      position: relative;
+      width: 460px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 40px 36px;
+      overflow: hidden;
+      animation: cardIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Card inner glow line */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.6;
+    }
+
+    /* Status pill */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(200,255,87,0.08);
+      border: 1px solid rgba(200,255,87,0.18);
+      border-radius: 999px;
+      padding: 4px 12px 4px 8px;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* Time display */
+    .time-block {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    #clock {
+      font-family: 'DM Mono', monospace;
+      font-size: 80px;
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: -2px;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+    #seconds {
+      font-family: 'DM Mono', monospace;
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--accent);
+      padding-bottom: 10px;
+      letter-spacing: -1px;
+      min-width: 56px;
+      transition: opacity 0.1s;
+    }
+
+    /* Date line */
+    .date-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    #date-full {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    #timezone {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 24px;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .stat:hover {
+      background: rgba(200,255,87,0.04);
+      border-color: rgba(200,255,87,0.2);
+    }
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'DM Mono', monospace;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .stat-value span {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* Progress bar – day progress */
+    .progress-block {
+      margin-bottom: 8px;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'DM Mono', monospace;
+    }
+    #progress-pct {
+      font-size: 11px;
+      color: var(--accent);
+      font-family: 'DM Mono', monospace;
+    }
+    .progress-track {
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 999px;
+      transition: width 1s linear;
+    }
+
+    /* Month label bottom */
+    .month-tag {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    #month-name {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+    }
+    #year-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* Colon blink */
+    .colon {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.15; }
+    }
+
+    /* Digit flip on change */
+    .flip {
+      animation: flip 0.18s ease both;
+    }
+    @keyframes flip {
+      0%   { opacity: 0; transform: translateY(-8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="section__top">
-            <div id="month"></div>
-            <div id="data"></div>
-            <div id="datetime"></div>
-        </div>
-        <!-- <div class="section">
-            <div class="week__days">
-                <div>D</div>
-                <div>S</div>
-                <div>T</div>
-                <div>Q</div>
-                <div>Q</div>
-                <div>S</div>
-                <div>S</div>
-            </div>
-            <div class="days"></div>
-            
-        </div> -->
+
+  <!-- Ambient blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="card">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      ao vivo
     </div>
-    
+
+    <div class="time-block">
+      <div id="clock">00<span class="colon">:</span>00</div>
+      <div id="seconds">00</div>
+    </div>
+
+    <div class="date-line">
+      <div id="date-full">—</div>
+      <div id="timezone">—</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Dia</div>
+        <div class="stat-value" id="stat-day">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Semana</div>
+        <div class="stat-value" id="stat-week">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Do Ano</div>
+        <div class="stat-value" id="stat-doy">—<span>/365</span></div>
+      </div>
+    </div>
+
+    <div class="progress-block">
+      <div class="progress-header">
+        <div class="progress-label">Progresso do Dia</div>
+        <div id="progress-pct">0%</div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="month-tag">
+      <div id="month-name">—</div>
+      <div id="year-tag">—</div>
+    </div>
+  </div>
+
+  <script>
+    const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const DAYS   = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+    const pad = n => String(n).padStart(2, '0');
+
+    function dayOfYear(d) {
+      const start = new Date(d.getFullYear(), 0, 0);
+      const diff  = d - start;
+      return Math.floor(diff / 86400000);
+    }
+
+    function weekOfYear(d) {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    }
+
+    let prevSec = -1;
+
+    function tick() {
+      const now = new Date();
+      const h   = pad(now.getHours());
+      const m   = pad(now.getMinutes());
+      const s   = pad(now.getSeconds());
+
+      // Clock
+      document.getElementById('clock').innerHTML =
+        `${h}<span class="colon">:</span>${m}`;
+
+      // Seconds — flip animation on change
+      const secEl = document.getElementById('seconds');
+      if (now.getSeconds() !== prevSec) {
+        secEl.textContent = s;
+        secEl.classList.remove('flip');
+        void secEl.offsetWidth;
+        secEl.classList.add('flip');
+        prevSec = now.getSeconds();
+      }
+
+      // Date
+      const dayName   = DAYS[now.getDay()];
+      const dayNum    = pad(now.getDate());
+      const monthNum  = pad(now.getMonth() + 1);
+      const year      = now.getFullYear();
+      document.getElementById('date-full').textContent =
+        `${dayName}, ${dayNum}/${monthNum}/${year}`;
+
+      // Timezone
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      document.getElementById('timezone').textContent = tz;
+
+      // Stats
+      document.getElementById('stat-day').textContent = dayNum;
+      document.getElementById('stat-week').textContent = 'S' + weekOfYear(now);
+
+      const doy  = dayOfYear(now);
+      const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+      document.getElementById('stat-doy').innerHTML =
+        `${doy}<span>/${leap ? 366 : 365}</span>`;
+
+      // Day progress
+      const elapsed = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const pct     = (elapsed / 86400 * 100).toFixed(1);
+      document.getElementById('progress-pct').textContent  = pct + '%';
+      document.getElementById('progress-fill').style.width = pct + '%';
+
+      // Month / year
+      document.getElementById('month-name').textContent = MONTHS[now.getMonth()];
+      document.getElementById('year-tag').textContent   = year;
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  </script>
 </body>
 </html>
